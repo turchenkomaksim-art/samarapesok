@@ -549,7 +549,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
     <form class="form" id="req">
       <input id="fhp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <h3>Заявка на песок</h3>
-      <div class="hint">Заполните тоннаж и укажите, самовывоз или доставка. Текст заявки откроется в мессенджере, останется нажать «Отправить».</div>
+      <div class="hint">Заполните тоннаж и укажите, самовывоз или доставка. Заявка сразу придёт нам, и мы перезвоним.</div>
       <div class="field"><label for="fname">Имя или организация</label><input id="fname" type="text" autocomplete="organization" placeholder="ООО «Стройка» / Андрей"></div>
       <div class="two">
         <div class="field"><label for="ftons">Тоннаж, т</label><input id="ftons" type="number" inputmode="decimal" min="1" step="0.5" placeholder="30"></div>
@@ -558,7 +558,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
       <div class="field"><label for="fdeliv">Самовывоз или доставка</label>
         <select id="fdeliv"><option value="self">Самовывоз, своя машина</option><option value="deliv">Доставка, рассчитайте стоимость</option></select></div>
       <div class="field" id="faddrwrap" hidden><label for="faddr">Адрес объекта</label><input id="faddr" type="text" placeholder="Самара, ул. …, или населённый пункт"></div>
-      <div class="field"><label for="fphone">Ваш телефон для связи</label><input id="fphone" type="tel" inputmode="tel" placeholder="+7"></div>
+      <div class="field"><label for="fphone">Ваш телефон для связи</label><input id="fphone" type="tel" inputmode="numeric" autocomplete="tel" value="+7 " placeholder="+7 (900) 000-00-00"></div>
       <div class="checks">
         <span class="checks-l">Нужны документы:</span>
         <label class="check"><input id="fprot" type="checkbox"> протокол испытаний</label>
@@ -631,6 +631,23 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
   lb.addEventListener('click',function(e){if(e.target===lb)closeLb();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLb();});
 
+  (function(){
+    var ph=document.getElementById('fphone');
+    function fmt(v){
+      var d=v.replace(/\D/g,'');
+      if(v.indexOf('+7')===0) d=d.slice(1);
+      if(d.length>10&&(d[0]==='7'||d[0]==='8')) d=d.slice(1);
+      d=d.slice(0,10);
+      var o='+7 ';
+      if(d.length) o+='('+d.slice(0,3);
+      if(d.length>=3) o+=') '+d.slice(3,6);
+      if(d.length>=6) o+='-'+d.slice(6,8);
+      if(d.length>=8) o+='-'+d.slice(8,10);
+      return o;
+    }
+    ph.addEventListener('input',function(){ph.value=fmt(ph.value);});
+    ph.addEventListener('focus',function(){if(!ph.value)ph.value='+7 ';});
+  })();
   var form=document.getElementById('req'), via='tg';
   form.querySelectorAll('button[type=submit]').forEach(function(b){b.addEventListener('click',function(){via=b.dataset.via;});});
   form.addEventListener('submit',function(e){
@@ -646,7 +663,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
     } else lines.push('Самовывоз, своя машина');
     var docs=[]; if(document.getElementById('fprot').checked)docs.push('протокол испытаний'); if(document.getElementById('fdecl').checked)docs.push('декларация ЕАЭС');
     if(docs.length)lines.push('Нужны документы: '+docs.join(', '));
-    if(g('fphone'))lines.push('Телефон: '+g('fphone'));
+    if(g('fphone').replace(/\D/g,'').length>1)lines.push('Телефон: '+g('fphone'));
     var text=lines.join('\n');
     var sent=document.getElementById('sent');
     function viaMessenger(){
@@ -655,12 +672,12 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
       var a=document.createElement('a');a.href='https://t.me/+79270143777';a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);
     }
     if(!ORDER_URL){ viaMessenger(); return; }
-    if(g('fphone').replace(/\D/g,'').length<10){ sent.textContent='Укажите телефон полностью, чтобы мы могли перезвонить.'; sent.dataset.show='1'; document.getElementById('fphone').focus(); return; }
+    if(g('fphone').replace(/\D/g,'').length<11){ sent.textContent='Укажите телефон полностью: +7 и ещё 10 цифр, чтобы мы могли перезвонить.'; sent.dataset.show='1'; sent.scrollIntoView({block:'center',behavior:'smooth'}); document.getElementById('fphone').focus(); return; }
     var payload={name:g('fname'),tons:g('ftons'),when:g('fwhen'),delivery:fdeliv.value,address:g('faddr'),zone:zone.value?zone.options[zone.selectedIndex].text:'',phone:g('fphone'),docs:docs.join(', '),text:text,hp:g('fhp')};
     sent.textContent='Отправляем заявку…'; sent.dataset.show='1';
     fetch(ORDER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-      .then(function(r){ if(!r.ok) throw new Error('bad'); sent.textContent='Заявка отправлена. Мы перезвоним в ближайшее время.'; form.reset(); delivChange(); })
-      .catch(function(){ sent.textContent='Не удалось отправить. Откроем мессенджер, текст заявки уже скопирован.'; viaMessenger(); });
+      .then(function(r){ if(!r.ok) throw new Error('код '+r.status); sent.textContent='Заявка отправлена. Мы перезвоним в ближайшее время.'; sent.scrollIntoView({block:'center',behavior:'smooth'}); form.reset(); delivChange(); })
+      .catch(function(e){ sent.textContent='Не удалось отправить ('+((e&&e.message)||'нет связи')+'). Открываем Telegram, текст заявки уже скопирован.'; sent.scrollIntoView({block:'center',behavior:'smooth'}); viaMessenger(); });
   });
 
   /* loading scene: one 16 s loop driven by requestAnimationFrame */
