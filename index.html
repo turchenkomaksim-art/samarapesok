@@ -544,9 +544,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
       <div class="crow"><a class="val sm" href="mailto:ccr163@mail.ru">ccr163@mail.ru</a><button class="copy" type="button" data-copy="ccr163@mail.ru" aria-label="Скопировать почту" title="Скопировать"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div>
       <div class="msgs">
         <a class="btn primary" href="https://t.me/+79270143777" target="_blank" rel="noopener">Написать в Telegram</a>
-        <button class="btn dark" type="button" id="maxbtn" data-copy="+79270143777">Написать в MAX</button>
       </div>
-      <p class="maxnote">В MAX найдите нас по номеру +7 927 014‑37‑77 — кнопка скопирует его.</p>
     </div>
     <form class="form" id="req">
       <input id="fhp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
@@ -560,17 +558,16 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
       <div class="field"><label for="fdeliv">Самовывоз или доставка</label>
         <select id="fdeliv"><option value="self">Самовывоз, своя машина</option><option value="deliv">Доставка, рассчитайте стоимость</option></select></div>
       <div class="field" id="faddrwrap" hidden><label for="faddr">Адрес объекта</label><input id="faddr" type="text" placeholder="Самара, ул. …, или населённый пункт"></div>
-      <div class="field"><label for="fphone">Ваш телефон, если удобнее звонок</label><input id="fphone" type="tel" inputmode="tel" placeholder="+7"></div>
+      <div class="field"><label for="fphone">Ваш телефон для связи</label><input id="fphone" type="tel" inputmode="tel" placeholder="+7"></div>
       <div class="checks">
         <span class="checks-l">Нужны документы:</span>
         <label class="check"><input id="fprot" type="checkbox"> протокол испытаний</label>
         <label class="check"><input id="fdecl" type="checkbox"> декларация ЕАЭС</label>
       </div>
       <div class="actions">
-        <button class="btn primary" type="submit" data-via="tg">Отправить в Telegram</button>
-        <button class="btn dark" type="submit" data-via="max">Отправить в MAX</button>
+        <button class="btn primary" type="submit" data-via="tg">Отправить заявку</button>
       </div>
-      <div class="sent" id="sent">Текст заявки скопирован. Если мессенджер не открылся, вставьте его в сообщение на номер +7 927 014‑37‑77.</div>
+      <div class="sent" id="sent">Текст заявки скопирован. Если Telegram не открылся, вставьте текст в сообщение на номер +7 927 014‑37‑77.</div>
     </form>
   </div>
 </section>
@@ -627,7 +624,6 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
     try{ navigator.clipboard.writeText(txt).then(done,fallback); }catch(e){ fallback(); }
   }
   document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){copyText(b.dataset.copy,b);});});
-  document.getElementById('maxbtn').addEventListener('click',function(){copyText(this.dataset.copy,this);});
   var lb=document.getElementById('lightbox'), lbimg=document.getElementById('lbimg');
   document.querySelectorAll('[data-scan]').forEach(function(scan){scan.addEventListener('click',function(){lbimg.src=scan.querySelector('img').src;lbimg.alt=scan.querySelector('img').alt;lb.hidden=false;document.body.style.overflow='hidden';});});
   function closeLb(){lb.hidden=true;document.body.style.overflow='';}
@@ -656,11 +652,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 32px;justify-content:space-bet
     function viaMessenger(){
       copyText(text,null);
       sent.dataset.show='1';
-      if(via==='tg'){
-        var a=document.createElement('a');a.href='https://t.me/+79270143777';a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);
-      } else {
-        sent.textContent='Текст заявки скопирован. Откройте MAX, найдите +7 927 014‑37‑77 и вставьте текст в сообщение.';
-      }
+      var a=document.createElement('a');a.href='https://t.me/+79270143777';a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);
     }
     if(!ORDER_URL){ viaMessenger(); return; }
     if(g('fphone').replace(/\D/g,'').length<10){ sent.textContent='Укажите телефон полностью, чтобы мы могли перезвонить.'; sent.dataset.show='1'; document.getElementById('fphone').focus(); return; }
